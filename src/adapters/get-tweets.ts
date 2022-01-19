@@ -10,23 +10,18 @@ export const getTweets = async (
     dotenv.config();
 
     const endpointUrl = 'https://api.twitter.com/2/tweets/search/all';
-    const startTime = "2021-03-13";
-    const endTime = "2021-06-06";
-    const token = process.env.BEARER_TOKEN;
+    const startTime = process.env.START_TIME || null;
+    const endTime = process.env.END_TIME || null;
+    const token = process.env.BEARER_TOKEN || null;
+    const query = process.env.SEARCH_QUERY || null;
 
-    if (!token)
-        throw ".env BEARER_TOKEN not found";
-
-    /*
-    #bolsonarogenocida
-    só em portugues
-    sem replies
-    sem retweets
-    de 13/03/2021 até 06/06/2021
-    */
+    if (!startTime) throw ".env START_TIME not found";
+    if (!endTime) throw ".env END_TIME not found";
+    if (!token) throw ".env BEARER_TOKEN not found";
+    if (!query) throw ".env SEARCH_QUERY not found";
 
     let params: any = {
-        "query": "#bolsonarogenocida -is:retweet -is:reply lang:pt",
+        "query": query,
         "tweet.fields": "created_at",
         "expansions": "author_id,attachments.media_keys",
         "user.fields": "username",
