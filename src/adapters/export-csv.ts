@@ -7,21 +7,28 @@ export const exportCsv = async (tweets: Tweet[]) => {
     let exportFile = fs.createWriteStream('export.csv');
 
     stream.write([
-        "#",
         "Data",
         "Usuário",
-        "Imagens",
-        "Tweet"
+        "Tweet",
+        "Imagens"
     ]);
 
-    tweets.forEach((tweet, index) => {
-        stream.write([
-            index+1,
+    tweets.forEach((tweet) => {
+        let row = [
             tweet.created_at,
             tweet.author,
-            tweet.image,
             tweet.text
-        ]);
+        ]
+
+        tweet.images.forEach((image) => {
+            row.push(`=image("${image}")`);
+        });
+
+        // Placeholder quando tem imagem para cécula ficar grande
+        if (tweet.images.length > 0)
+            row.push("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+
+        stream.write(row);
     });
 
     stream.pipe(exportFile);

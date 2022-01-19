@@ -51,7 +51,7 @@ export const getTweets = async (
     });
 
     let users = getUsers(response);
-    let photos = getPhotos(response);
+    let medias = getMedias(response);
 
     let tweets: Tweet[] = [];
     if (previousTweets.length > 0) {
@@ -68,7 +68,7 @@ export const getTweets = async (
                 author: findAuthorUsername(tweet, users),
                 created_at: new Date(tweet.created_at).toLocaleString('pt-BR'),
                 text: tweet.text.replace(/(?:https?|ftp):\/\/[\n\S]+/g, ''),
-                image: findImage(tweet, photos)
+                images: findImages(tweet, medias)
             });
         });
     }
@@ -94,19 +94,18 @@ const findAuthorUsername = (tweet: any, users: any): string => {
     return "@" + users[tweet.author_id] || tweet.author_id;
 }
 
-const findImage = (tweet: any, photos: any): string => {
-    let urls = "";
+const findImages = (tweet: any, medias: any): string[] => {
+    let images: string[] = [];
 
     if (tweet?.attachments) {
-        tweet.attachments.media_keys.forEach(key => {
-            if (urls != "")
-                urls += "\n";
-            
-            urls += photos[key] || "";
+        tweet.attachments.media_keys.forEach(media_key => {
+            if (medias[media_key]) {
+                images.push(medias[media_key]);
+            }
         });
     }
 
-    return urls;
+    return images;
 }
 
 const getUsers = (response: any): any => {
@@ -121,7 +120,7 @@ const getUsers = (response: any): any => {
     return users;
 }
 
-const getPhotos = (response: any): any => {
+const getMedias = (response: any): any => {
     let photos = {};
     
     if (response.body.includes?.media){
