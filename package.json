@@ -1,0 +1,18 @@
+{
+  "name": "bolsonaro-genocida-hashtag",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "yarn build && . ./.env && node ./dist/src/index.js",
+    "build": "rm -rf dist && tsc"
+  },
+  "dependencies": {
+    "dotenv": "^11.0.0",
+    "fast-csv": "^4.3.6",
+    "got": "^11.8.3",
+    "needle": "^3.0.0",
+    "oauth-1.0a": "^2.2.6",
+    "typescript": "^4.5.4"
+  }
+}
