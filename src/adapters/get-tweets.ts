@@ -2,14 +2,14 @@ import { Tweet } from "../types/tweet"
 import needle = require('needle');
 import * as dotenv from "dotenv";
 
+dotenv.config();
+
 export const getTweets = async (
     nextToken: string = "", 
     previousTweets: Tweet[] = [],
     result_count: number = 0
 ): Promise<Tweet[]> => {
-    dotenv.config();
 
-    const endpointUrl = 'https://api.twitter.com/2/tweets/search/all';
     const startTime = process.env.START_TIME || null;
     const endTime = process.env.END_TIME || null;
     const token = process.env.BEARER_TOKEN || null;
@@ -22,7 +22,7 @@ export const getTweets = async (
 
     let params: any = {
         "query": query,
-        "tweet.fields": "created_at",
+        "tweet.fields": "created_at,public_metrics",
         "expansions": "author_id,attachments.media_keys",
         "user.fields": "username",
         "media.fields": "media_key,url", 
@@ -38,13 +38,7 @@ export const getTweets = async (
         }
     };
 
-    const response = await needle('get', endpointUrl, params, {
-        headers: {
-            "User-Agent": "v2FullArchiveJS",
-            "authorization": `Bearer ${token}`
-        }
-    });
-
+    let response = await tryExecute(params, token);
     let users = getUsers(response);
     let medias = getMedias(response);
 
@@ -53,7 +47,7 @@ export const getTweets = async (
         tweets = previousTweets;
     }
 
-    if (response.body?.meta.result_count) {
+    if (response.body?.meta?.result_count) {
         result_count = result_count + response.body.meta.result_count;
     }
 
@@ -63,6 +57,10 @@ export const getTweets = async (
                 author: findAuthorUsername(tweet, users),
                 created_at: new Date(tweet.created_at).toLocaleString('pt-BR'),
                 text: tweet.text.replace(/(?:https?|ftp):\/\/[\n\S]+/g, ''),
+                likes: tweet.public_metrics.like_count,
+                retweets: tweet.public_metrics.retweet_count,
+                replies: tweet.public_metrics.reply_count,
+                quotes: tweet.public_metrics.quote_count,
                 images: findImages(tweet, medias)
             });
         });
@@ -82,6 +80,24 @@ export const getTweets = async (
         return tweets;
     } else {
         throw new Error(response.body);
+    }
+}
+
+const tryExecute = async (params: any, token: string): Promise<any> => {
+    const endpointUrl = 'https://api.twitter.com/2/tweets/search/all';
+
+    const response = await needle('get', endpointUrl, params, {
+        headers: {
+            "User-Agent": "v2FullArchiveJS",
+            "authorization": `Bearer ${token}`
+        }
+    });
+
+    if (response.statusCode == 503) { 
+        console.log("Try execute again");
+        return await tryExecute(params, token);
+    } else {
+        return response;
     }
 }
 

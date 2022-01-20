@@ -10,6 +10,10 @@ export const exportCsv = async (tweets: Tweet[]) => {
         "Data",
         "Usuário",
         "Tweet",
+        "Curtidas",
+        "Retweets",
+        "Respostas",
+        "Citações",
         "Imagens"
     ]);
 
@@ -17,8 +21,12 @@ export const exportCsv = async (tweets: Tweet[]) => {
         let row = [
             tweet.created_at,
             tweet.author,
-            tweet.text
-        ]
+            tweet.text,
+            tweet.likes,
+            tweet.retweets,
+            tweet.replies,
+            tweet.quotes
+        ];
 
         tweet.images.forEach((image) => {
             row.push(`=image("${image}")`);
