@@ -1,5 +1,4 @@
 import { Tweet } from "../types/tweet"
-import needle = require('needle');
 import * as dotenv from "dotenv";
 
 dotenv.config();
@@ -47,12 +46,12 @@ export const getTweets = async (
         tweets = previousTweets;
     }
 
-    if (response.body?.meta?.result_count) {
-        result_count = result_count + response.body.meta.result_count;
+    if (response?.meta?.result_count) {
+        result_count = result_count + response.meta.result_count;
     }
 
-    if (response.body?.data) {
-        response.body.data.forEach(tweet => {
+    if (response?.data) {
+        response.data.forEach(tweet => {
             tweets.push({
                 author: findAuthorUsername(tweet, users),
                 created_at: new Date(tweet.created_at).toLocaleString('pt-BR'),
@@ -69,9 +68,9 @@ export const getTweets = async (
     console.log(`Tweets coletados: ${result_count}`);
 
     if (tweets.length > 0) {
-        if (response.body.meta?.next_token) {
+        if (response.meta?.next_token) {
             return await getTweets(
-                response.body.meta.next_token, 
+                response.meta.next_token, 
                 tweets,
                 result_count
             );
@@ -79,25 +78,27 @@ export const getTweets = async (
 
         return tweets;
     } else {
-        throw new Error(response.body);
+        throw new Error(response);
     }
 }
 
 const tryExecute = async (params: any, token: string): Promise<any> => {
-    const endpointUrl = 'https://api.twitter.com/2/tweets/search/all';
+    const queryParams = new URLSearchParams(params).toString();
+    const endpointUrl = 'https://api.twitter.com/2/tweets/search/all?' + queryParams;
 
-    const response = await needle('get', endpointUrl, params, {
+    const response = await fetch(endpointUrl, {
+        method: 'GET',
         headers: {
             "User-Agent": "v2FullArchiveJS",
             "authorization": `Bearer ${token}`
         }
     });
 
-    if (response.statusCode == 503) { 
+    if (response.status == 503) { 
         console.log("Try execute again");
         return await tryExecute(params, token);
     } else {
-        return response;
+        return await response.json();
     }
 }
 
@@ -122,8 +123,8 @@ const findImages = (tweet: any, medias: any): string[] => {
 const getUsers = (response: any): any => {
     let users = {};
 
-    if (response.body.includes?.users) {
-        response.body.includes.users.forEach(user => {
+    if (response.includes?.users) {
+        response.includes.users.forEach(user => {
             users[user.id] = user.username;
         });
     }
@@ -134,8 +135,8 @@ const getUsers = (response: any): any => {
 const getMedias = (response: any): any => {
     let photos = {};
     
-    if (response.body.includes?.media){
-        response.body.includes.media.forEach(media => {
+    if (response.includes?.media){
+        response.includes.media.forEach(media => {
             if (media.type == "photo") {
                 photos[media.media_key] = media.url;
 

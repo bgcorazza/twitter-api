@@ -4,7 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "yarn build && . ./.env && node ./dist/src/index.js",
+    "start": "yarn build && . ./.env && node --experimental-fetch ./dist/src/index.js",
     "build": "rm -rf dist && tsc"
   },
   "dependencies": {
