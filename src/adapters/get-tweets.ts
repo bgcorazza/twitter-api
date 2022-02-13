@@ -1,3 +1,4 @@
+import { DataResponse, SearchAllTweetsResponse } from '../types/search-all-tweets-response';
 import { Tweet } from "../types/tweet"
 import * as dotenv from "dotenv";
 
@@ -78,11 +79,11 @@ export const getTweets = async (
 
         return tweets;
     } else {
-        throw new Error(response);
+        throw new Error(response.title);
     }
 }
 
-const tryExecute = async (params: any, token: string): Promise<any> => {
+const tryExecute = async (params: any, token: string): Promise<SearchAllTweetsResponse> => {
     const queryParams = new URLSearchParams(params).toString();
     const endpointUrl = 'https://api.twitter.com/2/tweets/search/all?' + queryParams;
 
@@ -98,15 +99,15 @@ const tryExecute = async (params: any, token: string): Promise<any> => {
         console.log("Try execute again");
         return await tryExecute(params, token);
     } else {
-        return await response.json();
+        return await response.json() as SearchAllTweetsResponse;
     }
 }
 
-const findAuthorUsername = (tweet: any, users: any): string => {
+const findAuthorUsername = (tweet: DataResponse, users: any): string => {
     return "@" + users[tweet.author_id] || tweet.author_id;
 }
 
-const findImages = (tweet: any, medias: any): string[] => {
+const findImages = (tweet: DataResponse, medias: any): string[] => {
     let images: string[] = [];
 
     if (tweet?.attachments) {
@@ -120,7 +121,7 @@ const findImages = (tweet: any, medias: any): string[] => {
     return images;
 }
 
-const getUsers = (response: any): any => {
+const getUsers = (response: SearchAllTweetsResponse): any => {
     let users = {};
 
     if (response.includes?.users) {
@@ -132,7 +133,7 @@ const getUsers = (response: any): any => {
     return users;
 }
 
-const getMedias = (response: any): any => {
+const getMedias = (response: SearchAllTweetsResponse): any => {
     let photos = {};
     
     if (response.includes?.media){
