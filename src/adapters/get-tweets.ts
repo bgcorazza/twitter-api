@@ -66,7 +66,7 @@ export const getTweets = async (
         });
     }
 
-    console.log(`Tweets coletados: ${result_count}`);
+    console.log(`Colected tweets: ${result_count}`);
 
     if (tweets.length > 0) {
         if (response.meta?.next_token) {
@@ -78,9 +78,9 @@ export const getTweets = async (
         } 
 
         return tweets;
-    } else {
-        throw new Error(response.title);
     }
+
+    throw new Error(response.title);
 }
 
 const tryExecute = async (params: any, token: string): Promise<SearchAllTweetsResponse> => {
@@ -97,9 +97,9 @@ const tryExecute = async (params: any, token: string): Promise<SearchAllTweetsRe
     if (response.status == 503) { 
         console.log("Try execute again");
         return await tryExecute(params, token);
-    } else {
-        return await response.json() as SearchAllTweetsResponse;
     }
+
+    return await response.json() as SearchAllTweetsResponse;
 }
 
 const findAuthorUsername = (tweet: DataResponse, users: any): string => {
