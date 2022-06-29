@@ -1,8 +1,9 @@
+import { Output } from './../ports/output';
 import { format } from '@fast-csv/format';
-import { Tweet } from "../types/tweet";
+import { Tweet } from "../models/tweet";
 import fs = require('fs');
 
-export const exportCsv = async (tweets: Tweet[]) => {
+export const write: Output["write"] = async (tweets: Tweet[]) => {
     const stream = format({ delimiter: '\t' });
     let exportFile = fs.createWriteStream('export.csv');
 
