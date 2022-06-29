@@ -90,7 +90,6 @@ const tryExecute = async (params: any, token: string): Promise<SearchAllTweetsRe
     const response = await fetch(endpointUrl, {
         method: 'GET',
         headers: {
-            "User-Agent": "v2FullArchiveJS",
             "authorization": `Bearer ${token}`
         }
     });
