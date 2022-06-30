@@ -1,25 +1,14 @@
-import { getTwitterClient } from './custom-twitter-client';
-import { TwitterClient } from '../ports/twitter-client';
+import { TwitterClient, TwitterClientConfig } from '../ports/twitter-client';
 import { DataResponse, SearchAllTweetsResponse } from '../models/search-all-tweets-response';
 import { Tweet } from "../models/tweet"
 
-const configs = getTwitterClient().configs;
-
-const params: any = {
-    "query": configs.query,
-    "tweet.fields": "created_at,public_metrics",
-    "expansions": "author_id,attachments.media_keys",
-    "user.fields": "username",
-    "media.fields": "media_key,url", 
-    "max_results": "500",
-    "start_time": `${configs.startTime}T00:00:00-03:00`,
-    "end_time": `${configs.endTime}T23:59:59-03:00`,
-};
-
 export const searchTweets: TwitterClient["searchTweets"] = async (
+    configs: TwitterClientConfig,
     nextPaginationToken: string = "", 
     tweets: Tweet[] = []
 ): Promise<Tweet[]> => {
+
+    const params = buildParams(configs);
 
     if (nextPaginationToken !== "") {
         params.next_token = nextPaginationToken;
@@ -35,12 +24,26 @@ export const searchTweets: TwitterClient["searchTweets"] = async (
 
     if (response?.meta?.next_token) {
         return await searchTweets(
+            configs,
             response.meta.next_token, 
             allTweets
         );
     } 
 
     return allTweets;
+}
+
+const buildParams = (configs: {query: string, startTime: string, endTime: string}): any =>{
+    return {
+        "query": configs.query,
+        "tweet.fields": "created_at,public_metrics",
+        "expansions": "author_id,attachments.media_keys",
+        "user.fields": "username",
+        "media.fields": "media_key,url", 
+        "max_results": "500",
+        "start_time": `${configs.startTime}T00:00:00-03:00`,
+        "end_time": `${configs.endTime}T23:59:59-03:00`,
+    };
 }
 
 const parseResponse = async (response: SearchAllTweetsResponse, users: any, medias: any): Promise<Tweet[]> => {

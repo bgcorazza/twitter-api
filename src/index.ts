@@ -9,7 +9,7 @@ const outputAdapter: Output = getOutputAdapter();
 
 const main = async () => {
   try {
-    const tweets = await twitterClient.searchTweets();
+    const tweets = await twitterClient.searchTweets(twitterClient.configs);
     await outputAdapter.write(tweets);
   } catch (e) {
       console.error(e);
