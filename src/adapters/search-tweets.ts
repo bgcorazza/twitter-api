@@ -2,6 +2,8 @@ import { TwitterClient, TwitterClientConfig } from '../ports/twitter-client';
 import { DataResponse, SearchAllTweetsResponse } from '../models/search-all-tweets-response';
 import { Tweet } from "../models/tweet"
 
+const searchTweetsEndpoint = 'https://api.twitter.com/2/tweets/search/all';
+
 export const searchTweets: TwitterClient["searchTweets"] = async (
     configs: TwitterClientConfig,
     nextPaginationToken: string = "", 
@@ -33,7 +35,7 @@ export const searchTweets: TwitterClient["searchTweets"] = async (
     return allTweets;
 }
 
-const buildParams = (configs: {query: string, startTime: string, endTime: string}): any =>{
+const buildParams = (configs: TwitterClientConfig): any =>{
     return {
         "query": configs.query,
         "tweet.fields": "created_at,public_metrics",
@@ -46,7 +48,11 @@ const buildParams = (configs: {query: string, startTime: string, endTime: string
     };
 }
 
-const parseResponse = async (response: SearchAllTweetsResponse, users: any, medias: any): Promise<Tweet[]> => {
+const parseResponse = async (
+    response: SearchAllTweetsResponse, 
+    users: any, 
+    medias: any
+): Promise<Tweet[]> => {
     const tweets: Tweet[] | undefined = response?.data?.map(tweet => {
         return {
             author: findAuthorUsername(tweet, users),
@@ -69,9 +75,8 @@ const parseResponse = async (response: SearchAllTweetsResponse, users: any, medi
 
 const getTweets = async (params: any, token: string): Promise<SearchAllTweetsResponse> => {
     const queryParams = new URLSearchParams(params).toString();
-    const endpointUrl = 'https://api.twitter.com/2/tweets/search/all?' + queryParams;
 
-    const response = await fetch(endpointUrl, {
+    const response = await fetch(`${searchTweetsEndpoint}?${queryParams}`, {
         method: 'GET',
         headers: {
             "authorization": `Bearer ${token}`
