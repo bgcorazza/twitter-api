@@ -4,8 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "yarn build && . ./.env && node --experimental-fetch ./dist/src/index.js",
-    "build": "rm -rf dist && tsc"
+    "start": "yarn ts-node ./src/index.ts"
   },
   "dependencies": {
     "dotenv": "^11.0.0",
@@ -13,6 +12,7 @@
     "got": "^11.8.3",
     "needle": "^3.0.0",
     "oauth-1.0a": "^2.2.6",
+    "ts-node": "^10.8.1",
     "typescript": "^4.5.4"
   }
 }

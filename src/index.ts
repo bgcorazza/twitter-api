@@ -1,11 +1,16 @@
+import "./setup-env";
+import { getOutputAdapter } from './adapters/output-adapter';
+import { Output } from './ports/output';
+import { getTwitterClient } from "./adapters/custom-twitter-client";
+import { TwitterClient } from "./ports/twitter-client";
 
-import { getTweets } from "./adapters/get-tweets";
-import { exportCsv } from "./adapters/export-csv";
+const twitterClient: TwitterClient = getTwitterClient();
+const outputAdapter: Output = getOutputAdapter();
 
 const main = async () => {
   try {
-    const response = await getTweets();
-    exportCsv(response);
+    const tweets = await twitterClient.searchTweets(twitterClient.configs);
+    await outputAdapter.write(tweets);
   } catch (e) {
       console.error(e);
   }
