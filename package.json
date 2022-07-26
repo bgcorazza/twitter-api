@@ -9,7 +9,7 @@
   "dependencies": {
     "dotenv": "^11.0.0",
     "fast-csv": "^4.3.6",
-    "got": "^11.8.3",
+    "got": "^11.8.5",
     "needle": "^3.0.0",
     "oauth-1.0a": "^2.2.6",
     "ts-node": "^10.8.1",
