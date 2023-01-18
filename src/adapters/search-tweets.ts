@@ -35,7 +35,10 @@ export const searchTweets: TwitterClient["searchTweets"] = async (
     return allTweets;
 }
 
-const buildParams = (configs: TwitterClientConfig): any =>{
+const buildParams = (configs: TwitterClientConfig): any => {
+    const startTime = buildTimeParam(configs.startTime, "00:00:00");
+    const endTime = buildTimeParam(configs.endTime, "23:59:59");
+
     return {
         "query": configs.query,
         "tweet.fields": "created_at,public_metrics",
@@ -43,8 +46,8 @@ const buildParams = (configs: TwitterClientConfig): any =>{
         "user.fields": "username",
         "media.fields": "media_key,url", 
         "max_results": "500",
-        "start_time": `${configs.startTime}T00:00:00-03:00`,
-        "end_time": `${configs.endTime}T23:59:59-03:00`,
+        "start_time": startTime,
+        "end_time": endTime,
     };
 }
 
@@ -133,4 +136,12 @@ const getMedias = (response: SearchAllTweetsResponse): any => {
     }
 
     return photos;
+}
+
+const buildTimeParam = (time: String, defaultHour: String): String => {
+    if (time.length == 10) {
+        time = `${time} ${defaultHour}`;
+    }
+
+    return `${time.replace(" ", "T")}-03:00`;
 }
