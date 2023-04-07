@@ -7,4 +7,6 @@ export interface Tweet {
     replies: number;
     quotes: number;
     images: string[];
+    ref_type: string;
+    ref_text: string;
 }

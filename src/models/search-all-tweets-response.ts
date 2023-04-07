@@ -19,6 +19,7 @@ export interface DataResponse {
     author_id: string;
     public_metrics: PublicMetricsResponse;
     attachments: AttachmentsResponse;
+    referenced_tweets: ReferencedTweets[];
 }
 
 export interface PublicMetricsResponse {
@@ -33,18 +34,35 @@ export interface AttachmentsResponse {
 }
 
 export interface IncludesResponse {
-    users: UserResponse[];
-    media: MediaResponse[];
+    users: IncludeUserResponse[];
+    media: IncludeMediaResponse[];
+    tweets: IncludeTweetResponse[];
 }
 
-export interface UserResponse {
+export interface IncludeUserResponse {
     id: string;
     name: string;
     username: string;
 }
 
-export interface MediaResponse {
+export interface IncludeMediaResponse {
     media_key: string;
     type: string;
     url: string;
+}
+
+export interface IncludeTweetResponse {
+    id: string;
+    text: string;
+}
+
+export interface ReferencedTweets {
+    id: string;
+    type: ReferencedTweetType;
+}
+
+export enum ReferencedTweetType {
+    quoted, 
+    retweeted,
+    replied_to
 }

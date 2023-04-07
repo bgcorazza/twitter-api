@@ -1,5 +1,5 @@
 import { TwitterClient, TwitterClientConfig } from '../ports/twitter-client';
-import { DataResponse, SearchAllTweetsResponse } from '../models/search-all-tweets-response';
+import { DataResponse, ReferencedTweetType, SearchAllTweetsResponse } from '../models/search-all-tweets-response';
 import { Tweet } from "../models/tweet"
 
 const searchTweetsEndpoint = 'https://api.twitter.com/2/tweets/search/all';
@@ -19,7 +19,8 @@ export const searchTweets: TwitterClient["searchTweets"] = async (
     const response = await getTweets(params, configs.token);
     const users = getUsers(response);
     const medias = getMedias(response);
-    const newTweets = await parseResponse(response, users, medias);
+    const referencedTweets = getReferencedTweets(response);
+    const newTweets = await parseResponse(response, users, medias, referencedTweets);
     const allTweets = [...tweets, ...newTweets];
 
     console.log(`Colected tweets: ${allTweets.length}`);
@@ -42,7 +43,7 @@ const buildParams = (configs: TwitterClientConfig): any => {
     return {
         "query": configs.query,
         "tweet.fields": "created_at,public_metrics",
-        "expansions": "author_id,attachments.media_keys",
+        "expansions": "author_id,attachments.media_keys,referenced_tweets.id",
         "user.fields": "username",
         "media.fields": "media_key,url", 
         "max_results": "500",
@@ -54,9 +55,11 @@ const buildParams = (configs: TwitterClientConfig): any => {
 const parseResponse = async (
     response: SearchAllTweetsResponse, 
     users: any, 
-    medias: any
+    medias: any,
+    referencedTweets: any
 ): Promise<Tweet[]> => {
     const tweets: Tweet[] | undefined = response?.data?.map(tweet => {
+        const { ref_type, ref_text } = findFirstReferencedTweet(tweet, referencedTweets);
         return {
             author: findAuthorUsername(tweet, users),
             created_at: new Date(tweet.created_at).toLocaleString('pt-BR'),
@@ -65,7 +68,9 @@ const parseResponse = async (
             retweets: tweet.public_metrics.retweet_count,
             replies: tweet.public_metrics.reply_count,
             quotes: tweet.public_metrics.quote_count,
-            images: findImages(tweet, medias)
+            images: findImages(tweet, medias),
+            ref_type,
+            ref_text
         };
     });
 
@@ -96,6 +101,19 @@ const getTweets = async (params: any, token: string): Promise<SearchAllTweetsRes
 
 const findAuthorUsername = (tweet: DataResponse, users: any): string => {
     return "@" + users[tweet.author_id] || tweet.author_id;
+}
+
+const findFirstReferencedTweet = (tweet: DataResponse, referencedTweets: any): any => {
+    let ref_text: string | null = null;
+    let ref_type: ReferencedTweetType | null = null;
+    
+    if (tweet?.referenced_tweets && tweet.referenced_tweets.length > 0) {
+        let firstReferencedTweet = tweet.referenced_tweets[0];
+        ref_type = firstReferencedTweet.type;
+        ref_text = referencedTweets[firstReferencedTweet.id];
+    }
+
+    return { ref_type, ref_text };
 }
 
 const findImages = (tweet: DataResponse, medias: any): string[] => {
@@ -136,6 +154,18 @@ const getMedias = (response: SearchAllTweetsResponse): any => {
     }
 
     return photos;
+}
+
+const getReferencedTweets = (response: SearchAllTweetsResponse): any => {
+    const referencedTweets = {};
+
+    if (response.includes?.tweets){
+        response.includes.tweets.forEach(tweet => {
+            referencedTweets[tweet.id] = tweet.text;
+        });
+    }
+
+    return referencedTweets;
 }
 
 const buildTimeParam = (time: String, defaultHour: String): String => {
