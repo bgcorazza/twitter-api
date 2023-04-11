@@ -1,8 +1,8 @@
 import { Output } from './../ports/output';
 import { format } from '@fast-csv/format';
 import { Tweet } from "../models/tweet";
+import { ReferencedTweetType } from '../models/csv';
 import fs = require('fs');
-import { ReferencedTweetType } from 'src/models/csv';
 
 export const write: Output["write"] = async (tweets: Tweet[]) => {
     const stream = format({ delimiter: '\t' });
@@ -16,9 +16,9 @@ export const write: Output["write"] = async (tweets: Tweet[]) => {
         "Retweets",
         "Respostas",
         "Citações",
-        "Imagens",
         "Tipo de Referência",
-        "Tweet Referenciado"
+        "Tweet Referenciado",
+        "Imagens"
     ]);
 
     tweets.forEach((tweet) => {
