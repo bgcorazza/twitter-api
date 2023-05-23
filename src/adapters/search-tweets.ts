@@ -20,7 +20,8 @@ export const searchTweets: TwitterClient["searchTweets"] = async (
     const users = getUsers(response);
     const medias = getMedias(response);
     const referencedTweets = getReferencedTweets(response);
-    const newTweets = await parseResponse(response, users, medias, referencedTweets);
+    const places = getPlaces(response);
+    const newTweets = await parseResponse(response, users, medias, referencedTweets, places);
     const allTweets = [...tweets, ...newTweets];
 
     console.log(`Colected tweets: ${allTweets.length}`);
@@ -42,10 +43,11 @@ const buildParams = (configs: TwitterClientConfig): any => {
 
     return {
         "query": configs.query,
-        "tweet.fields": "created_at,public_metrics",
-        "expansions": "author_id,attachments.media_keys,referenced_tweets.id",
+        "tweet.fields": "created_at,public_metrics,geo",
+        "expansions": "author_id,attachments.media_keys,referenced_tweets.id,geo.place_id",
         "user.fields": "username",
         "media.fields": "media_key,url", 
+        "place.fields": "geo",
         "max_results": "500",
         "start_time": startTime,
         "end_time": endTime,
@@ -56,10 +58,12 @@ const parseResponse = async (
     response: SearchAllTweetsResponse, 
     users: any, 
     medias: any,
-    referencedTweets: any
+    referencedTweets: any,
+    places: any
 ): Promise<Tweet[]> => {
     const tweets: Tweet[] | undefined = response?.data?.map(tweet => {
         const { ref_type, ref_text } = findFirstReferencedTweet(tweet, referencedTweets);
+        const { latitude, longitude } = findCoordinates(tweet, places);
         return {
             author: findAuthorUsername(tweet, users),
             created_at: new Date(tweet.created_at).toLocaleString('pt-BR'),
@@ -70,7 +74,9 @@ const parseResponse = async (
             quotes: tweet.public_metrics.quote_count,
             images: findImages(tweet, medias),
             ref_type,
-            ref_text
+            ref_text,
+            latitude,
+            longitude
         };
     });
 
@@ -114,6 +120,18 @@ const findFirstReferencedTweet = (tweet: DataResponse, referencedTweets: any): a
     }
 
     return { ref_type, ref_text };
+}
+
+const findCoordinates = (tweet: DataResponse, places: any): any => {
+    let latitude: string | null = null;
+    let longitude: string | null = null;
+
+    if (tweet?.geo.place_id) {
+        latitude = places[tweet.geo.place_id]["latitude"];
+        longitude = places[tweet.geo.place_id]["longitude"];
+    }
+
+    return { latitude, longitude };
 }
 
 const findImages = (tweet: DataResponse, medias: any): string[] => {
@@ -166,6 +184,21 @@ const getReferencedTweets = (response: SearchAllTweetsResponse): any => {
     }
 
     return referencedTweets;
+}
+
+const getPlaces = (response: SearchAllTweetsResponse): any => {
+    const places = {};
+
+    if (response.includes?.places){
+        response.includes.places.forEach(place => {
+            places[place.id] = {
+                "latitude": `"${place.geo.bbox[1]}"`,
+                "longitude": `"${place.geo.bbox[0]}"`
+            }
+        })
+    }
+
+    return places;
 }
 
 const buildTimeParam = (time: String, defaultHour: String): String => {

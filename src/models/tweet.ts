@@ -9,4 +9,6 @@ export interface Tweet {
     images: string[];
     ref_type: string;
     ref_text: string;
+    latitude: string;
+    longitude: string;
 }

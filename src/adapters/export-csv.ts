@@ -16,6 +16,8 @@ export const write: Output["write"] = async (tweets: Tweet[]) => {
         "Retweets",
         "Respostas",
         "Citações",
+        "Latitude",
+        "Longitude",
         "Tipo de Referência",
         "Tweet Referenciado",
         "Imagens"
@@ -30,6 +32,8 @@ export const write: Output["write"] = async (tweets: Tweet[]) => {
             tweet.retweets,
             tweet.replies,
             tweet.quotes,
+            tweet.latitude,
+            tweet.longitude,
             ReferencedTweetType[tweet.ref_type],
             tweet.ref_text
         ];

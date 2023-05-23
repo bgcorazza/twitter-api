@@ -20,6 +20,11 @@ export interface DataResponse {
     public_metrics: PublicMetricsResponse;
     attachments: AttachmentsResponse;
     referenced_tweets: ReferencedTweets[];
+    geo: GeoResponse;
+}
+
+export interface GeoResponse {
+    place_id: string;
 }
 
 export interface PublicMetricsResponse {
@@ -37,6 +42,7 @@ export interface IncludesResponse {
     users: IncludeUserResponse[];
     media: IncludeMediaResponse[];
     tweets: IncludeTweetResponse[];
+    places: IncludePlaceResponse[];
 }
 
 export interface IncludeUserResponse {
@@ -54,6 +60,16 @@ export interface IncludeMediaResponse {
 export interface IncludeTweetResponse {
     id: string;
     text: string;
+}
+
+export interface IncludePlaceResponse {
+    id: string;
+    geo: IncludePlaceResponseGeo;
+}
+
+export interface IncludePlaceResponseGeo {
+    type: string;
+    bbox: Array<number>;
 }
 
 export interface ReferencedTweets {
