@@ -126,7 +126,7 @@ const findCoordinates = (tweet: DataResponse, places: any): any => {
     let latitude: string | null = null;
     let longitude: string | null = null;
 
-    if (tweet?.geo.place_id) {
+    if (tweet?.geo?.place_id) {
         latitude = places[tweet.geo.place_id]["latitude"];
         longitude = places[tweet.geo.place_id]["longitude"];
     }
