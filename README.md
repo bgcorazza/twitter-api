@@ -1,4 +1,6 @@
 # twitter-api
+![img_7](https://github.com/bgcorazza/twitter-api/assets/36956551/28ad80fc-78de-4c75-9049-939fc7d5460b)
+
 
 ## Dependencies 
 - [NodeJS](https://nodejs.org/en/download/)
